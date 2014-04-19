@@ -1,0 +1,165 @@
+;format:
+;name type
+;types:
+;  jump
+;    flags: cond
+;  call
+;  return
+;    flags: int
+;  data
+;    flags: mem +(register out) -(register in)
+;  control
+;    flags: mem int cond +(register out) -(register in)
+;  ignore (all instructions not listed)
+;  warn (issues warning when found)
+;  (any)
+;    flags: prefix
+
+
+;8086/8088 instructions
+; (besides protected mode only)
+aaa warn
+aad warn
+aam warn
+aas warn
+adc data
+add data
+and data
+call call
+cbw data +a -a
+clc control
+cld control
+cli ignore
+cmc control
+cmp control
+cmpsb control mem +di -di -si
+cmpsw control mem +di -di -si
+cwd data +a -a
+daa warn
+das warn
+dec data
+div data +a +d -a
+esc warn
+hlt warn
+idiv data +a +d -a
+imul data +a +d -a
+in data mem +a
+inc data
+int control int
+into control int
+iret return int
+ja jump cond
+jae jump cond
+jb jump cond
+jbe jump cond
+jc jump cond
+jcxz jump cond
+je jump cond
+jg jump cond
+jge jump cond
+jl jump cond
+jle jump cond
+jmp jump
+jna jump cond
+jnae jump cond
+jnb jump cond
+jnbe jump cond
+jnc jump cond
+jne jump cond
+jng jump cond
+jnge jump cond
+jnl jump cond
+jnle jump cond
+jno jump cond
+jnp jump cond
+jns jump cond
+jnz jump cond
+jo jump cond
+jp jump cond
+jpe jump cond
+jpo jump cond
+js jump cond
+jz jump cond
+lahf control +a
+lds data mem
+lea data
+les data mem
+lock control prefix
+lodsb data mem +a -si
+lodsw data mem +a -si
+loop jump cond +c
+loope jump cond +c
+loopne jump cond +c
+loopnz jump cond +c
+loopz jump cond +c
+mov data
+;movsb data mem +si +di
+;movsw data mem +si +di
+movs data mem +si +di
+mul data +d +a -a
+neg data
+nop ignore
+not data
+or data
+pop data mem +sp -sp
+popf control +sp -sp
+push data mem +sp -sp
+pushf data mem +sp -sp
+rcl data
+rcr data
+rep control prefix
+repe control cond prefix
+repne control cond prefix
+repnz control cond prefix
+repz control cond prefix
+ret return
+retn return
+retf return
+rol data
+ror data
+sahf control
+sal data
+sar data
+sbb data
+scasb control mem +di -a -di
+scasw control mem +di -a -di
+shl data
+shr data
+stc control
+std control
+sti ignore
+;stosb data mem +di -di -a
+;stosw data mem +di -di -a
+stos data mem +di -di -a
+sub data
+test control
+wait ignore
+xchg data
+xlat data mem +a -b -a
+xor data
+
+;80186/80188
+bound control int mem
+enter control mem +sp -sp
+ins ignore
+leave control mem +sp -sp
+outs ignore
+popa control mem +sp -sp
+pusha control mem +sp -sp
+
+;80286
+; TODO
+
+
+
+;ignorable prefixes:
+cs ignore prefix
+ds ignore prefix
+es ignore prefix
+gs ignore prefix
+fs ignore prefix
+ss ignore prefix
+addr16 ignore prefix
+addr32 ignore prefix
+data16 ignore prefix
+data32 ignore prefix
