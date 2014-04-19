@@ -1,8 +1,7 @@
 import std.stdio;
 import std.conv;
 
-enum OpcodeType { Jump, Call, Return, Data, Control, Ignore, Warn }
-enum RegClass { a, b, c, d, di, si, sp, bp, other }
+import defs;
 
 class OpcodeLoader {
     Opcode[string] opcodes;

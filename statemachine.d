@@ -1,3 +1,5 @@
+import defs;
+
 class State(T) {
     State[T] edges;
     bool end;
@@ -6,7 +8,7 @@ class State(T) {
         this.end = end;
     }
     
-    bool select(const T[] input) {
+    bool select(const T[] input, ref RegClass) {
         if (input.length == 0)
             return end;
         if (input[0] !in edges)

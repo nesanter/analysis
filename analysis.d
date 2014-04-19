@@ -152,14 +152,14 @@ class InstructionData {
             foreach (o; i.operands) {
                 //writeln(o.raw);
                 if (is_register(o.raw)) {
-                    o.type = OType.Register;
+                    o.type = OperandType.Register;
                 } else if (is_mem_access(o.raw)) {
-                    o.type = OType.Indirection;
+                    o.type = OperandType.Indirection;
                 } else if (is_constant(o.raw, o.val)) {
-                    o.type = OType.Constant;
+                    o.type = OperandType.Constant;
                     //writeln(o.raw);
                 } else {
-                    o.type = OType.Unknown;
+                    o.type = OperandType.Unknown;
                     writeln("unknown: ",o.raw);
                     writeln("         ",i.raw);
                 }
@@ -259,12 +259,9 @@ class Instruction {
     string inst,raw;
 }
 
-enum OType {
-    Constant, Register, Indirection, Unknown
-}
 
 class Operand {
-    OType type;
+    OperandType type;
     ulong val;
     string raw;
     override string toString() {
