@@ -1,14 +1,39 @@
 import std.stdio;
 import std.conv;
 import core.exception;
+import std.getopt;
+import std.traits;
 
 import statemachine;
 import opcode;
 import defs;
+import backend.stats;
+
+Backend[] analysis_types;
 
 void main(string[] args) {
     
-    if (args.length == 1 || args[1] == "help") {
+    bool help;
+    string iset_name = "iset.txt";
+    
+    try {
+        try {
+            getopt(args,
+                std.getopt.config.passThrough,
+                "help", &help,
+                "type|t", &set_type,
+                "iset", &iset_name
+            );
+        } catch (UnknownBackendException be) {
+            writeln("failed to parse commandline (unknown backend ",be.bad_backend,")");
+            return;
+        }
+    } catch (Exception e) {
+        writeln("failed to parse commandline");
+        return;
+    }
+    
+    if (help) {
         display_help();
         return;
     }
@@ -16,9 +41,9 @@ void main(string[] args) {
     File isetfile;
     
     try {
-        isetfile = File("iset.txt","r");
+        isetfile = File(iset_name,"r");
     } catch {
-        writeln("Unable to open iset.txt");
+        writeln("Unable to open ",iset_name);
         return;
     }
     
@@ -41,9 +66,22 @@ void main(string[] args) {
     
     infile.close();
     
-    id.parse(opload);
+    try {
+        id.parse(opload);
+    } catch (ParseException e) {
+        writeln("Internal error: ",e);
+    }
 }
 
+void set_type(string opt, string val) {
+    foreach (t; EnumMembers!Backend) {
+        if (val == to!string(t)) {
+            analysis_types ~= t;
+            return;
+        }
+    }
+    throw new UnknownBackendException("Error: unknown backend", val);
+}
 
 void display_help() {
     writeln("Syntax: analysis file_name");

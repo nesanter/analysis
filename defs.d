@@ -1,3 +1,5 @@
+enum Backend { stats, printer, none }
+
 enum RegClass {
     none,
     a, b, c, d, di, si, sp, bp,           //real classes
@@ -16,6 +18,13 @@ enum OperandType {
 
 class ParseException : Exception {
     this(string msg) {
+        super(msg);
+    }
+}
+class UnknownBackendException : Exception {
+    string bad_backend;
+    this(string msg, string bad) {
+        bad_backend = bad;
         super(msg);
     }
 }
