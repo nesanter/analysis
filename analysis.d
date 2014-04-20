@@ -4,6 +4,7 @@ import core.exception;
 
 import statemachine;
 import opcode;
+import defs;
 
 void main(string[] args) {
     
@@ -57,13 +58,6 @@ void main(string[] args) {
 
 void display_help() {
     writeln("Syntax: analysis file_name");
-}
-
-
-class ParseException : Exception {
-    this(string msg) {
-        super(msg);
-    }
 }
 
 class InstructionData {
@@ -151,7 +145,7 @@ class InstructionData {
             }
             foreach (o; i.operands) {
                 //writeln(o.raw);
-                if (is_register(o.raw)) {
+                if (is_register(o.raw, o.rc)) {
                     o.type = OperandType.Register;
                 } else if (is_mem_access(o.raw)) {
                     o.type = OperandType.Indirection;
@@ -217,8 +211,8 @@ void init_state_machine() {
                                'f':sf2,'g':sg2],false);
 }
 
-bool is_register(string operand) {
-    return regcheck.select(operand);
+bool is_register(string operand, ref RegClass cl) {
+    return regcheck.select(operand,cl);
 }
 
 bool is_mem_access(string operand) {
@@ -262,6 +256,7 @@ class Instruction {
 
 class Operand {
     OperandType type;
+    RegClass rc;
     ulong val;
     string raw;
     override string toString() {
