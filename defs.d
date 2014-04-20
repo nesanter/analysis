@@ -1,9 +1,18 @@
 enum RegClass {
-    a, b, c, d, di, si, sp, bp, other, //real classes
-    none, convert_to_i, convert_to_p, tmp_s //temporary classes
+    none,
+    a, b, c, d, di, si, sp, bp,           //real classes
+    r8, r9, r10, r11, r12, r13, r14, r15, // ""
+    other,                                // ""
+    convert_to_i, convert_to_p, tmp_s //temporary classes
 }
 enum OpcodeType { Jump, Call, Return, Data, Control, Ignore, Warn }
-enum OperandType { Constant, Register, Indirection, Unknown }
+enum OperandType {
+    Constant,
+    Register,
+    Indirection,
+    IndirectRegister,
+    Unknown 
+}
 
 class ParseException : Exception {
     this(string msg) {

@@ -25,7 +25,7 @@ class State(T) {
                     break;
                 }
             } else if (c == RegClass.convert_to_p) {
-                switch (c) {
+                switch (rc) {
                     case RegClass.tmp_s:
                         rc = RegClass.sp;
                     break;

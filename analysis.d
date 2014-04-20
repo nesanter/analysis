@@ -43,6 +43,7 @@ void main(string[] args) {
     
     id.parse(opload);
     
+    /*
     foreach (inst; id.instructions) {
         if (inst.prefix.length > 0) {
             writeln(inst.opc," ",inst.prefix);
@@ -53,6 +54,7 @@ void main(string[] args) {
     foreach (inst; id.unknown_instructions.byKey) {
         writeln(inst," (",id.unknown_instructions[inst],")");
     }
+    */
 }
 
 
@@ -144,19 +146,18 @@ class InstructionData {
                 }
             }
             foreach (o; i.operands) {
-                //writeln(o.raw);
                 if (is_register(o.raw, o.rc)) {
                     o.type = OperandType.Register;
                 } else if (is_mem_access(o.raw)) {
                     o.type = OperandType.Indirection;
+                    o.subops = split_indirection(o.raw);
                 } else if (is_constant(o.raw, o.val)) {
                     o.type = OperandType.Constant;
-                    //writeln(o.raw);
                 } else {
                     o.type = OperandType.Unknown;
                     writeln("unknown: ",o.raw);
-                    writeln("         ",i.raw);
                 }
+                //writeln(o);
             }
         }
     }
@@ -174,37 +175,37 @@ void init_state_machine() {
     auto sx = new State!char(empty,true);
     auto sl = new State!char(empty,true);
     auto sh = new State!char(empty,true);
-    auto si1 = new State!char(empty,true);
-    auto sse = new State!char(empty,true);
-    auto sce = new State!char(empty,true);
+    auto si1 = new State!char(empty,true,RegClass.convert_to_i);
+    auto sse = new State!char(empty,true,RegClass.other);
+    auto sce = new State!char(empty,true,RegClass.other);
     auto snb = new State!char(empty,true);
     auto snw = new State!char(empty,true);
     auto snd = new State!char(empty,true);
-    auto s0 = new State!char(['b':snb,'w':snw,'d':snd],true);
-    auto s1b = new State!char(['b':snb,'w':snw,'d':snd],true);
-    auto s2 = new State!char(['b':snb,'w':snw,'d':snd],true);
-    auto s3 = new State!char(['b':snb,'w':snw,'d':snd],true);
-    auto s4 = new State!char(['b':snb,'w':snw,'d':snd],true);
-    auto s5 = new State!char(['b':snb,'w':snw,'d':snd],true);
-    auto s8 = new State!char(['b':snb,'w':snw,'d':snd],true);
-    auto s9 = new State!char(['b':snb,'w':snw,'d':snd],true);
+    auto s0 = new State!char(['b':snb,'w':snw,'d':snd],true,RegClass.r10);
+    auto s1b = new State!char(['b':snb,'w':snw,'d':snd],true,RegClass.r11);
+    auto s2 = new State!char(['b':snb,'w':snw,'d':snd],true,RegClass.r12);
+    auto s3 = new State!char(['b':snb,'w':snw,'d':snd],true,RegClass.r13);
+    auto s4 = new State!char(['b':snb,'w':snw,'d':snd],true,RegClass.r14);
+    auto s5 = new State!char(['b':snb,'w':snw,'d':snd],true,RegClass.r15);
+    auto s8 = new State!char(['b':snb,'w':snw,'d':snd],true,RegClass.r8);
+    auto s9 = new State!char(['b':snb,'w':snw,'d':snd],true,RegClass.r9);
     auto s1 = new State!char(['0':s0,'1':s1b,'2':s2,'3':s3,'4':s4,'5':s5],false);
     auto scr = new State!char(['0':sce,'1':sce,'2':sce,'3':sce,'4':sce],false);
-    auto si2 = new State!char(['h':sh,'l':sl],true);
-    auto sp1 = new State!char(empty,true);
-    auto sp2 = new State!char(['h':sh,'l':sl],true);
-    auto sa1 = new State!char(['x':sx],false);
-    auto sb1 = new State!char(['x':sx,'p':sp1],false);
-    auto sc1 = new State!char(['x':sx],false);
-    auto sd1 = new State!char(['x':sx,'i':si1],false);
-    auto ss1 = new State!char(['i':si1,'p':sp1],true);
-    auto sa2 = new State!char(['x':sx,'h':sh,'l':sl],false);
-    auto sb2 = new State!char(['x':sx,'h':sh,'l':sl,'p':sp2],false);
-    auto sc2 = new State!char(['x':sx,'h':sh,'l':sl,'s':sse,'r':scr],false);
-    auto sd2 = new State!char(['x':sx,'h':sh,'l':sl,'i':si2,'s':sse],false);
-    auto ss2 = new State!char(['i':si2,'p':sp2,'s':sse],false);
-    auto sf2 = new State!char(['s':sse],false);
-    auto sg2 = new State!char(['s':sse],false);
+    auto si2 = new State!char(['h':sh,'l':sl],true,RegClass.convert_to_i);
+    auto sp1 = new State!char(empty,true,RegClass.convert_to_p);
+    auto sp2 = new State!char(['h':sh,'l':sl],true,RegClass.convert_to_p);
+    auto sa1 = new State!char(['x':sx],false,RegClass.a);
+    auto sb1 = new State!char(['x':sx,'p':sp1],false,RegClass.b);
+    auto sc1 = new State!char(['x':sx],false,RegClass.c);
+    auto sd1 = new State!char(['x':sx,'i':si1],false,RegClass.d);
+    auto ss1 = new State!char(['i':si1,'p':sp1],true,RegClass.tmp_s);
+    auto sa2 = new State!char(['x':sx,'h':sh,'l':sl],false,RegClass.a);
+    auto sb2 = new State!char(['x':sx,'h':sh,'l':sl,'p':sp2],false,RegClass.b);
+    auto sc2 = new State!char(['x':sx,'h':sh,'l':sl,'s':sse,'r':scr],false,RegClass.c);
+    auto sd2 = new State!char(['x':sx,'h':sh,'l':sl,'i':si2,'s':sse],false,RegClass.d);
+    auto ss2 = new State!char(['i':si2,'p':sp2,'s':sse],false,RegClass.tmp_s);
+    auto sf2 = new State!char(['s':sse],false,RegClass.other);
+    auto sg2 = new State!char(['s':sse],false,RegClass.other);
     auto sr = new State!char(['a':sa1,'b':sb1,'c':sc1,'d':sd1,'s':ss1,'8':s8,'9':s9,'1':s1],false);
     auto se = new State!char(['a':sa1,'b':sb1,'c':sc1,'d':sd1,'s':ss1],false);
     regcheck = new State!char(['r':sr,'e':se,'a':sa2,'b':sb2,'c':sc2,'d':sd2,'s':ss2,
@@ -245,6 +246,97 @@ bool is_constant(string operand, out ulong val) {
     return true;
 }
 
+Operand[] split_indirection(string s) {
+    Operand[] subops;
+    
+    //find PTR and discard
+    foreach (i; 0 .. s.length-4) {
+        if (s[i..i+4] == "PTR ") {
+            s = s[i+4..$];
+            break;
+        }
+    }
+    
+    //find immediate segment
+    while (s.length > 2 && s[0..2] == "0x") {
+        ulong i = 2;
+        while (i < s.length) {
+            if (s[i] == ':') {
+                subops ~= new Operand;
+                subops[$-1].raw = s[2..i];
+                subops[$-1].type = OperandType.Constant;
+                if (!is_constant(s[2..i],subops[$-1].val)) {
+                    throw new ParseException("Unable to parse indirection (bad segment)");
+                }
+                s = s[i+1..$];
+                break;
+            } else
+                i++;
+        }
+        if (i >= s.length)
+            break;
+    }
+    
+    //find segments
+    while (s.length > 2 && s[2] == ':') {
+        subops ~= new Operand;
+        subops[$-1].raw = s[0..2];
+        if (is_register(s[0..2],subops[$-1].rc)) {
+            subops[$-1].type = OperandType.Register;
+            s = s[3..$];
+        } else {
+            throw new ParseException("Unable to parse indirection (unknown segment)");
+        }
+    }
+    
+    //find []
+    if (s.length > 0 && s[0] == '[') {
+        s = s[1..$];
+        bool stop = false;
+        while (!stop) {
+            Operand op = new Operand;
+            foreach (i; 0 .. s.length) {
+                if (s[i] == '+' || s[i] == '-' || s[i] == '*' || s[i] == ']') {
+                    op.raw = s[0..i];
+                    if (is_register(s[0..i],op.rc)) {
+                        op.type = OperandType.Register;
+                    } else if (is_constant(s[0..i],op.val)) {
+                        op.type = OperandType.Constant;
+                    } else if (s[i-1] == 'z') {
+                        op.type = OperandType.Constant;
+                        op.val = 0;
+                    } else {
+                        throw new ParseException("Unable to parse indirection (not reg/imm)");
+                    }
+                    subops ~= op;
+                    
+                    if (s[i] == ']')
+                        stop = true;
+                    
+                    s = s[i+1..$];
+                    break;
+                }
+            }
+        }
+        if (s.length > 1) //remove +
+            s = s[1..$];
+    }
+    
+    //find constant
+    if (s.length > 0) {
+        subops ~= new Operand;
+        subops[$-1].raw = s;
+        subops[$-1].type = OperandType.Constant;
+        if (!is_constant(s,subops[$-1].val)) {
+            throw new ParseException("Unable to parse indirection (bad constant)");
+        }
+    }
+    
+    if (subops.length == 0)
+        throw new ParseException("Unable to parse indirection (no matches)");
+    return subops;
+}
+
 class Instruction {
     Opcode opc;
     ulong address;
@@ -259,8 +351,33 @@ class Operand {
     RegClass rc;
     ulong val;
     string raw;
+    Operand[] subops;
     override string toString() {
-        return raw;
+        final switch (type) {
+            case OperandType.Constant:
+                return "$"~to!string(val);
+            break;
+            case OperandType.Indirection:
+                if (subops.length == 0)
+                    return "[]";
+                string s = "["~to!string(subops[0]);
+                if (subops.length > 1) {
+                    foreach (op; subops[1..$]) {
+                        s ~= ","~to!string(op);
+                    }
+                }
+                return s~"]";
+            break;
+            case OperandType.Register:
+                return "%"~to!string(rc);
+            break;
+            case OperandType.IndirectRegister:
+                return "*"~to!string(rc);
+            break;
+            case OperandType.Unknown:
+                return "?:"~raw;
+            break;
+        }
     }
 }
 
