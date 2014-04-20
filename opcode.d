@@ -104,38 +104,6 @@ Opcode unknown_opcode(string name) {
     return unk;
 }
 
-
-class Opcode {
-    string name;
-    OpcodeType type;
-    //flags
-    bool flag_cond;
-    bool flag_mem;
-    bool flag_int;
-    bool flag_prefix;
-    RegClass[] extra_regs_out;
-    RegClass[] extra_regs_in;
-    
-    override string toString() {
-        string s = name ~ " (" ~ to!string(type) ~ ")";
-        if (flag_cond)
-            s ~= " cond";
-        if (flag_mem)
-            s ~= " mem";
-        if (flag_int)
-            s ~= " int";
-        if (flag_prefix)
-            s ~= " prefix";
-        foreach (r; extra_regs_out) {
-            s ~= " +" ~ to!string(r);
-        }
-        foreach (r; extra_regs_in) {
-            s ~= " -" ~ to!string(r);
-        }
-        return s;
-    }
-}
-
 RegClass classify_reg(string r) {
     switch (r) {
         case "a": return RegClass.a;

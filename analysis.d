@@ -7,7 +7,8 @@ import std.traits;
 import statemachine;
 import opcode;
 import defs;
-import backend.stats;
+static import backend.stats;
+static import backend.printer;
 
 Backend[] analysis_types;
 
@@ -33,7 +34,7 @@ void main(string[] args) {
         return;
     }
     
-    if (help) {
+    if (args.length == 1 || help) {
         display_help();
         return;
     }
@@ -69,8 +70,11 @@ void main(string[] args) {
     try {
         id.parse(opload);
     } catch (ParseException e) {
-        writeln("Internal error: ",e);
+        writeln("Internal error: ",e.msg);
+        return;
     }
+    
+    run_backends(analysis_types, id.instructions);
 }
 
 void set_type(string opt, string val) {
@@ -84,13 +88,20 @@ void set_type(string opt, string val) {
 }
 
 void display_help() {
-    writeln("Syntax: analysis file_name");
+    writeln("Syntax: analysis [options] filename");
+    writeln("  options:");
+    writeln("    --help\tdisplay this message");
+    writeln("    --iset\tselect instruction set definitions");
+    writeln("  backends:");
+    string s;
+    foreach (i,b; EnumMembers!Backend) {
+        writeln("    --type=",to!string(b));
+    }
 }
 
 class InstructionData {
     Instruction[] instructions;
     ulong[string] unknown_instructions;
-    bool[string] prefix_list;
     //load raw instruction data from file
     this(File infile, OpcodeLoader opcld) {
         foreach (line; infile.byLine) {
@@ -275,6 +286,8 @@ bool is_constant(string operand, out ulong val) {
 Operand[] split_indirection(string s) {
     Operand[] subops;
     
+    writeln(s);
+    
     //find PTR and discard
     foreach (i; 0 .. s.length-4) {
         if (s[i..i+4] == "PTR ") {
@@ -363,66 +376,6 @@ Operand[] split_indirection(string s) {
     return subops;
 }
 
-class Instruction {
-    Opcode opc;
-    ulong address;
-    Operand[] operands;
-    Opcode[] prefix;
-    string inst,raw;
-    override string toString() {
-        string s;
-        if (prefix.length > 0) {
-            s ~= "< ";
-            foreach (pfx; prefix) {
-                s ~= to!string(pfx)~" ";
-            }
-            s ~= "> ";
-        }
-        s ~= to!string(opc) ~ " : ";
-        foreach (op; operands) {
-            s ~= to!string(op) ~ " ";
-        }
-        s ~= "@" ~ to!string(address);
-        return s;
-    }
-}
-
-
-class Operand {
-    OperandType type;
-    RegClass rc;
-    ulong val;
-    string raw;
-    Operand[] subops;
-    override string toString() {
-        final switch (type) {
-            case OperandType.Constant:
-                return "$"~to!string(val);
-            break;
-            case OperandType.Indirection:
-                if (subops.length == 0)
-                    return "[]";
-                string s = "["~to!string(subops[0]);
-                if (subops.length > 1) {
-                    foreach (op; subops[1..$]) {
-                        s ~= ","~to!string(op);
-                    }
-                }
-                return s~"]";
-            break;
-            case OperandType.Register:
-                return "%"~to!string(rc);
-            break;
-            case OperandType.IndirectRegister:
-                return "*"~to!string(rc);
-            break;
-            case OperandType.Unknown:
-                return "?:"~raw;
-            break;
-        }
-    }
-}
-
 ulong ch_to_hex(char ch) {
     if (ch >= 48 && ch < 58) {
         return ch - 48;
@@ -436,4 +389,19 @@ ulong ch_to_dec(char ch) {
         return ch - 48;
     }
     throw new ParseException("Expected hex character, got "~[ch]);
+}
+
+void run_backends(Backend[] backends, Instruction[] instructions) {
+    foreach (b; backends) {
+        mixin(gen_run_backends());
+    }
+}
+
+string gen_run_backends() {
+    string s = "switch (b) {";
+    foreach (b; EnumMembers!Backend) {
+        if (b != Backend.none)
+            s ~= "case Backend."~to!string(b)~": backend."~to!string(b)~".run(instructions); break;";
+    }
+    return s ~ "default: throw new UnknownBackendException(\"error in run backends\",to!string(b));}";
 }

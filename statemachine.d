@@ -23,7 +23,6 @@ class State(T) {
                     break;
                     default:
                         throw new ParseException("Register identification error");
-                    break;
                 }
             } else if (c == RegClass.convert_to_p) {
                 switch (rc) {
@@ -35,7 +34,6 @@ class State(T) {
                     break;
                     default:
                         throw new ParseException("Register identification error");
-                    break;
                 }
             } else {
                 rc = c;
