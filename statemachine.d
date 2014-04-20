@@ -2,12 +2,13 @@ import defs;
 
 class State(T) {
     State[T] edges;
-    RegClass c;
+    RegClass c, altc;
     bool end;
-    this(State[T] edges, bool end, RegClass c = RegClass.none) {
+    this(State[T] edges, bool end, RegClass c = RegClass.none, RegClass altc = RegClass.none) {
         this.edges = edges;
         this.end = end;
         this.c = c;
+        this.altc = altc;
     }
     
     bool select(const T[] input, ref RegClass rc) {
@@ -40,8 +41,11 @@ class State(T) {
                 rc = c;
             }
         }
-        if (input.length == 0)
+        if (input.length == 0) {
+            if (altc != RegClass.none)
+                rc = altc;
             return end;
+        }
         if (input[0] !in edges)
             return false;
         return edges[input[0]].select(input[1..$], rc);

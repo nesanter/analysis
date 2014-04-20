@@ -97,6 +97,13 @@ class OpcodeLoader {
     }
 }
 
+Opcode unknown_opcode(string name) {
+    Opcode unk = new Opcode;
+    unk.name = name;
+    unk.type = OpcodeType.Ignore;
+    return unk;
+}
+
 
 class Opcode {
     string name;

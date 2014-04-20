@@ -42,19 +42,6 @@ void main(string[] args) {
     infile.close();
     
     id.parse(opload);
-    
-    /*
-    foreach (inst; id.instructions) {
-        if (inst.prefix.length > 0) {
-            writeln(inst.opc," ",inst.prefix);
-            writeln(inst.raw);
-        }
-    }
-    writeln("unknown instructions:");
-    foreach (inst; id.unknown_instructions.byKey) {
-        writeln(inst," (",id.unknown_instructions[inst],")");
-    }
-    */
 }
 
 
@@ -93,7 +80,7 @@ class InstructionData {
                         if (ch == ' ') {
                             if (i.inst in opcld.opcodes) {
                                 if (opcld.opcodes[i.inst].flag_prefix) {
-                                    writeln("prefix = ",i.inst);
+                                    //writeln("prefix = ",i.inst);
                                     if (opcld.opcodes[i.inst].type == OpcodeType.Ignore) {
                                         //do nothing
                                     } else {
@@ -139,6 +126,7 @@ class InstructionData {
             if (i.inst in opcld.opcodes) {
                 i.opc = opcld.opcodes[i.inst];
             } else {
+                i.opc = unknown_opcode(i.inst);
                 if (i.inst in unknown_instructions) {
                     unknown_instructions[i.inst]++;
                 } else {
@@ -176,7 +164,7 @@ void init_state_machine() {
     auto sl = new State!char(empty,true);
     auto sh = new State!char(empty,true);
     auto si1 = new State!char(empty,true,RegClass.convert_to_i);
-    auto sse = new State!char(empty,true,RegClass.other);
+    auto sse = new State!char(empty,true,RegClass.seg);
     auto sce = new State!char(empty,true,RegClass.other);
     auto snb = new State!char(empty,true);
     auto snw = new State!char(empty,true);
@@ -198,7 +186,7 @@ void init_state_machine() {
     auto sb1 = new State!char(['x':sx,'p':sp1],false,RegClass.b);
     auto sc1 = new State!char(['x':sx],false,RegClass.c);
     auto sd1 = new State!char(['x':sx,'i':si1],false,RegClass.d);
-    auto ss1 = new State!char(['i':si1,'p':sp1],true,RegClass.tmp_s);
+    auto ss1 = new State!char(['i':si1,'p':sp1],true,RegClass.tmp_s,RegClass.seg);
     auto sa2 = new State!char(['x':sx,'h':sh,'l':sl],false,RegClass.a);
     auto sb2 = new State!char(['x':sx,'h':sh,'l':sl,'p':sp2],false,RegClass.b);
     auto sc2 = new State!char(['x':sx,'h':sh,'l':sl,'s':sse,'r':scr],false,RegClass.c);
@@ -343,6 +331,22 @@ class Instruction {
     Operand[] operands;
     Opcode[] prefix;
     string inst,raw;
+    override string toString() {
+        string s;
+        if (prefix.length > 0) {
+            s ~= "< ";
+            foreach (pfx; prefix) {
+                s ~= to!string(pfx)~" ";
+            }
+            s ~= "> ";
+        }
+        s ~= to!string(opc) ~ " : ";
+        foreach (op; operands) {
+            s ~= to!string(op) ~ " ";
+        }
+        s ~= "@" ~ to!string(address);
+        return s;
+    }
 }
 
 
