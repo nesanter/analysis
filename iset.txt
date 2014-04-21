@@ -150,6 +150,123 @@ pusha control mem +sp -sp
 ;80286
 ; TODO
 
+;80386
+; TODO
+
+;80486
+; TODO
+
+;Pentium
+; TODO
+
+;Pentium MMX
+; TODO
+
+;AMD K6
+; TODO
+
+;Pentium Pro
+; TODO
+
+;SSE
+; TODO
+
+;SSE2
+; TODO
+
+;SSE3
+; TODO
+
+;x86-64
+; TODO
+
+;AMD-V
+; TODO
+
+;Intel VT-x
+; TODO
+
+;SSE4a
+; TODO
+
+;----x87----
+
+;8087
+; TODO
+
+;80287
+; TODO
+
+;80387
+; TODO
+
+;Pentium Pro
+; TODO
+
+;SSE
+; TODO
+
+;SSE3
+; TODO
+
+;----SIMD/misc----
+
+;MMX
+; TODO
+
+;MMX+
+; TODO
+
+;EMMX
+; TODO
+
+;3DNow!
+; TODO
+
+;3DNow!+
+; TODO
+
+;SSE
+; TODO
+
+;SSE2
+; TODO
+
+;SSE3
+; TODO
+
+;SSSE3
+; TODO
+
+;SSE4
+; TODO
+
+;AES
+; TODO
+
+;AVX
+; TODO
+
+;F16C
+; TODO
+
+;XOP
+; TODO
+
+;FMA
+; TODO
+
+;AVX2
+; TODO
+
+;BMI1
+; TODO
+
+;BMI2
+; TODO
+
+;TBM
+; TODO
 
 
 ;ignorable prefixes:

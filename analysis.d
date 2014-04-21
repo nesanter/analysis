@@ -192,7 +192,7 @@ class InstructionData {
                     o.type = OperandType.Constant;
                 } else {
                     o.type = OperandType.Unknown;
-                    writeln("unknown: ",o.raw);
+                    writeln("unknown: ",i.raw);
                 }
                 //writeln(o);
             }
@@ -206,7 +206,7 @@ class InstructionData {
 State!char regcheck;
 
 void init_state_machine() {
-    //covers a, b, c, d, si, di, sp, bp
+    //covers a, b, c, d, si, di, sp, bp, ip
     // plus stack registers and control registers
     State!char[char] empty;
     auto sx = new State!char(empty,true);
@@ -243,10 +243,12 @@ void init_state_machine() {
     auto ss2 = new State!char(['i':si2,'p':sp2,'s':sse],false,RegClass.tmp_s);
     auto sf2 = new State!char(['s':sse],false,RegClass.other);
     auto sg2 = new State!char(['s':sse],false,RegClass.other);
-    auto sr = new State!char(['a':sa1,'b':sb1,'c':sc1,'d':sd1,'s':ss1,'8':s8,'9':s9,'1':s1],false);
-    auto se = new State!char(['a':sa1,'b':sb1,'c':sc1,'d':sd1,'s':ss1],false);
+    auto sipe = new State!char(empty,true,RegClass.ip);
+    auto sip = new State!char(['p':sipe],false);
+    auto sr = new State!char(['a':sa1,'b':sb1,'c':sc1,'d':sd1,'s':ss1,'8':s8,'9':s9,'1':s1,'i':sip],false);
+    auto se = new State!char(['a':sa1,'b':sb1,'c':sc1,'d':sd1,'s':ss1, 'i':sip],false);
     regcheck = new State!char(['r':sr,'e':se,'a':sa2,'b':sb2,'c':sc2,'d':sd2,'s':ss2,
-                               'f':sf2,'g':sg2],false);
+                               'f':sf2,'g':sg2,'i':sip],false);
 }
 
 bool is_register(string operand, ref RegClass cl) {
@@ -285,8 +287,6 @@ bool is_constant(string operand, out ulong val) {
 
 Operand[] split_indirection(string s) {
     Operand[] subops;
-    
-    writeln(s);
     
     //find PTR and discard
     foreach (i; 0 .. s.length-4) {
