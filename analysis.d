@@ -90,7 +90,7 @@ void main(string[] args) {
         }
     }
 
-    run_backends(analysis_types, id.instructions);
+    run_backends(analysis_types, id.instructions, id.sections);
 }
 
 void set_type(string opt, string val) {
@@ -121,7 +121,6 @@ class InstructionData {
     Section[] sections;
     //load raw instruction data from file
     this(File infile, OpcodeLoader opcld) {
-        Section current_section;
         foreach (line; infile.byLine) {
             if (line.length < 2) continue;
             if (line[0..2] != "  ") {
@@ -134,6 +133,9 @@ class InstructionData {
                         }
                         addr = (addr << 4) + ch_to_hex(ch);
                     }
+                    if (sections.length > 0) {
+						sections[$-1].end = instructions.length;
+					}
                     sections ~= new Section;
                     sections[$-1].address = addr;
                     sections[$-1].begin = instructions.length;
@@ -201,6 +203,8 @@ class InstructionData {
             //writeln("address = ",i.address,", inst = ",i.inst,", operands = ",i.operands);
             instructions ~= i;
         }
+        if (sections.length > 0 && sections[$-1].end == 0)
+			sections[$-1].end = instructions.length;
     }
     //convert raw instruction data into analysis format
     void parse(OpcodeLoader opcld) {
@@ -229,7 +233,8 @@ class InstructionData {
                     o.type = OperandType.Constant;
                 } else {
                     o.type = OperandType.Unknown;
-                    writeln("unknown: ",i.raw);
+                    if (warnings)
+						writeln("unknown: ",i.raw);
                 }
                 //writeln(o);
             }
@@ -428,7 +433,7 @@ ulong ch_to_dec(char ch) {
     throw new ParseException("Expected hex character, got "~[ch]);
 }
 
-void run_backends(Backend[] backends, Instruction[] instructions) {
+void run_backends(Backend[] backends, Instruction[] instructions, Section[] sections) {
     foreach (b; backends) {
         mixin(gen_run_backends());
     }
@@ -438,7 +443,7 @@ string gen_run_backends() {
     string s = "switch (b) {";
     foreach (b; EnumMembers!Backend) {
         if (b != Backend.none)
-            s ~= "case Backend."~to!string(b)~": backend."~to!string(b)~".run(instructions); break;";
+            s ~= "case Backend."~to!string(b)~": backend."~to!string(b)~".run(instructions,sections); break;";
     }
     return s ~ "default: throw new UnknownBackendException(\"error in run backends\",to!string(b));}";
 }

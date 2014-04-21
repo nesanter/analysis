@@ -20,7 +20,10 @@ enum OperandType {
 
 class Section {
     ulong address;
-    ulong begin;
+    ulong begin, end;
+    override string toString() {
+		return "sec@"~to!string(address);
+	}
 }
 
 class Instruction {

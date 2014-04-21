@@ -3,7 +3,7 @@ import std.stdio;
 
 import defs;
 
-void run(Instruction[] instructions) {
+void run(Instruction[] instructions, Section[] sections) {
     ulong icount = instructions.length;
     ulong icount_call, icount_return, icount_jump,
           icount_data, icount_control, icount_other;

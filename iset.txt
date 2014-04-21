@@ -40,7 +40,7 @@ das warn
 dec data
 div data +a +d -a
 esc warn
-hlt warn
+hlt ignore
 idiv data +a +d -a
 imul data +a +d -a
 in data mem +a
