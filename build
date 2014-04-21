@@ -1,1 +1,1 @@
-dmd analysis.d statemachine.d opcode.d defs.d backend/stats.d backend/printer.d
+dmd analysis.d statemachine.d opcode.d defs.d backend/stats.d backend/printer.d backend/calls.d

@@ -1,6 +1,6 @@
 import std.conv;
 
-enum Backend { stats, printer, none }
+enum Backend { stats, printer, calls, none }
 
 enum RegClass {
     none,
@@ -16,6 +16,11 @@ enum OperandType {
     Indirection,
     IndirectRegister,
     Unknown 
+}
+
+class Section {
+    ulong address;
+    ulong begin;
 }
 
 class Instruction {

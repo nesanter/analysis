@@ -7,14 +7,17 @@ import std.traits;
 import statemachine;
 import opcode;
 import defs;
+
 static import backend.stats;
 static import backend.printer;
+static import backend.calls;
 
 Backend[] analysis_types;
+bool warnings = false;
 
 void main(string[] args) {
     
-    bool help;
+    bool help, print_unknown;
     string iset_name = "iset.txt";
     
     try {
@@ -23,7 +26,9 @@ void main(string[] args) {
                 std.getopt.config.passThrough,
                 "help", &help,
                 "type|t", &set_type,
-                "iset", &iset_name
+                "iset", &iset_name,
+                "warn", &warnings,
+                "unk", &print_unknown
             );
         } catch (UnknownBackendException be) {
             writeln("failed to parse commandline (unknown backend ",be.bad_backend,")");
@@ -63,7 +68,12 @@ void main(string[] args) {
         return;
     }
     
-    InstructionData id = new InstructionData(infile,opload);
+    InstructionData id;
+    try {
+         id = new InstructionData(infile,opload);
+    } catch (Exception e) {
+        writeln("Unexpected error: ",e.msg);
+    }
     
     infile.close();
     
@@ -74,6 +84,12 @@ void main(string[] args) {
         return;
     }
     
+    if (print_unknown) {
+        foreach (inst; id.unknown_instructions.byKey) {
+            writeln("unknown instruction ",inst," (count: ",id.unknown_instructions[inst],")");
+        }
+    }
+
     run_backends(analysis_types, id.instructions);
 }
 
@@ -102,11 +118,28 @@ void display_help() {
 class InstructionData {
     Instruction[] instructions;
     ulong[string] unknown_instructions;
+    Section[] sections;
     //load raw instruction data from file
     this(File infile, OpcodeLoader opcld) {
+        Section current_section;
         foreach (line; infile.byLine) {
             if (line.length < 2) continue;
-            if (line[0..2] != "  ") continue;
+            if (line[0..2] != "  ") {
+                if (line[$-2..$] == ">:") {
+                    ulong addr = 0;
+                    foreach (i,ch; line) {
+                        if (ch == ' ') {
+                            line = line[i+1..$];
+                            break;
+                        }
+                        addr = (addr << 4) + ch_to_hex(ch);
+                    }
+                    sections ~= new Section;
+                    sections[$-1].address = addr;
+                    sections[$-1].begin = instructions.length;
+                }
+                continue;
+            }
             Instruction i = new Instruction;
             ulong mode = 0;
             foreach (ch; line[2..$]) {
@@ -174,6 +207,8 @@ class InstructionData {
         foreach (i; instructions) {
             if (i.inst in opcld.opcodes) {
                 i.opc = opcld.opcodes[i.inst];
+                if (i.opc.type == OpcodeType.Warn)
+                    writeln("warning: unhandled instruction ",i.inst);
             } else {
                 i.opc = unknown_opcode(i.inst);
                 if (i.inst in unknown_instructions) {
@@ -181,6 +216,8 @@ class InstructionData {
                 } else {
                     unknown_instructions[i.inst] = 1;
                 }
+                if (warnings)
+                    writeln("warning: unknown instruction ",i.inst);
             }
             foreach (o; i.operands) {
                 if (is_register(o.raw, o.rc)) {
