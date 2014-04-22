@@ -41,11 +41,11 @@ class Instruction {
             }
             s ~= "> ";
         }
-        s ~= to!string(opc) ~ " : ";
+        s ~= to!string(opc) ~ " :";
         foreach (op; operands) {
-            s ~= to!string(op) ~ " ";
+            s ~= " "~to!string(op);
         }
-        s ~= "@" ~ to!string(address);
+        //s ~= "@" ~ to!string(address);
         return s;
     }
 }
