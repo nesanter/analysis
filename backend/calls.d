@@ -21,7 +21,7 @@ void run(Instruction[] instructions, Section[] sections, bool[string] modes) {
 				if (inst.operands[0].type == OperandType.Constant) {
 					Section dest = identify_section(inst.operands[0].val, sections);
 					if (dest is null) {
-						writeln("dest is null");
+						warn("dest is null");
 						fns[sec].unknown_edges++;
 					} else {
 						if (dest in fns[sec].edges)
@@ -37,11 +37,16 @@ void run(Instruction[] instructions, Section[] sections, bool[string] modes) {
 	}
 	
 	if ("dot" in modes && modes["dot"]) {
-		writeln("digraph {");
+		writeln("digraph calls {");
 		foreach (sec; fns.byKey) {
-			foreach (edge; fns[sec].edges.byKey) {
-				writeln("\ts",sec.address," -> ",edge.address);
-			}
+            writeln("s",sec.address);
+            if (fns[sec].edges.length > 0) {
+                write("s",sec.address," -> { ");
+                foreach (edge; fns[sec].edges.byKey) {
+                    write("s",edge.address," ");
+                }
+                writeln("}");
+            }
 		}
 		writeln("}");
 	} else {

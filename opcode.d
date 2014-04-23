@@ -23,7 +23,7 @@ class OpcodeLoader {
             if (fields.length == 0)
                 continue;
             if (fields.length == 1) {
-                writeln("error loading iset: no type for ",fields[0], "; skipping");
+                warn("error loading iset: no type for ",fields[0], "; skipping");
                 continue;
             }
             opc.name = fields[0];
@@ -59,12 +59,12 @@ class OpcodeLoader {
                         continue;
                     if (f[0] == '+') {
                         if (f.length == 1) {
-                            writeln("error loading iset: unknown flag ",f," for ",fields[0],"; ignoring");
+                            warn("error loading iset: unknown flag ",f," for ",fields[0],"; ignoring");
                         }
                         opc.extra_regs_out ~= classify_reg(f[1..$]);
                     } else if (f[0] == '-') {
                         if (f.length == 1) {
-                            writeln("error loading iset: unknown flag ",f," for ",fields[0],"; ignoring");
+                            warn("error loading iset: unknown flag ",f," for ",fields[0],"; ignoring");
                         }
                         opc.extra_regs_in ~= classify_reg(f[1..$]);
                     } else {
@@ -82,14 +82,14 @@ class OpcodeLoader {
                                 opc.flag_prefix = true;
                             break;
                             default:
-                                writeln("error loading iset: unknown flag ",f," for ",fields[0],"; ignoring");
+                                warn("error loading iset: unknown flag ",f," for ",fields[0],"; ignoring");
                             break;
                         }
                     }
                 }
             }
             if (fields[0] in opcodes) {
-                writeln("error loading iset: redundant instruction ",fields[0],"; skipping");
+                warn("error loading iset: redundant instruction ",fields[0],"; skipping");
                 continue;
             }
             opcodes[fields[0]] = opc;

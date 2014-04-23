@@ -11,6 +11,7 @@ import defs;
 static import backend.stats;
 static import backend.printer;
 static import backend.calls;
+static import backend.cyclo;
 
 Backend[] analysis_types;
 bool[string] modes;
@@ -33,15 +34,13 @@ void main(string[] args) {
                 "mode|m", &set_mode
             );
         } catch (UnknownBackendException be) {
-            writeln("failed to parse commandline (unknown backend ",be.bad_backend,")");
+            warn("failed to parse commandline (unknown backend ",be.bad_backend,")");
             return;
         }
     } catch (Exception e) {
-        writeln("failed to parse commandline");
+        warn("failed to parse commandline");
         return;
     }
-    
-    writeln(modes);
     
     if (args.length == 1 || help) {
         display_help();
@@ -53,7 +52,7 @@ void main(string[] args) {
     try {
         isetfile = File(iset_name,"r");
     } catch {
-        writeln("Unable to open ",iset_name);
+        warn("Unable to open ",iset_name);
         return;
     }
     
@@ -68,7 +67,7 @@ void main(string[] args) {
     try {
         infile = File(args[1],"r");
     } catch (Exception e) {
-        writeln("Unable to open ",args[1]);
+        warn("Unable to open ",args[1]);
         return;
     }
     
@@ -76,7 +75,8 @@ void main(string[] args) {
     try {
          id = new InstructionData(infile,opload);
     } catch (Exception e) {
-        writeln("Unexpected internal error: ",e.msg);
+        warn("Unexpected internal error: ",e.msg);
+        return;
     }
     
     infile.close();
@@ -90,13 +90,13 @@ void main(string[] args) {
     
     if (print_unknown) {
         foreach (inst; id.unknown_instructions.byKey) {
-            writeln("unknown instruction ",inst," (count: ",id.unknown_instructions[inst],")");
+            warn("unknown instruction ",inst," (count: ",id.unknown_instructions[inst],")");
         }
     }
 	try {
 		run_backends(analysis_types, id.instructions, id.sections, modes);
 	} catch (Exception e) {
-		writeln("Unexpected internal error: ",e.msg);
+		warn("Unexpected internal error: ",e.msg);
 	}
 }
 
@@ -231,7 +231,7 @@ class InstructionData {
             if (i.inst in opcld.opcodes) {
                 i.opc = opcld.opcodes[i.inst];
                 if (i.opc.type == OpcodeType.Warn)
-                    writeln("warning: unhandled instruction ",i.inst);
+                    warn("warning: encountered instruction ",i.inst);
             } else {
                 i.opc = unknown_opcode(i.inst);
                 if (i.inst in unknown_instructions) {
@@ -240,7 +240,7 @@ class InstructionData {
                     unknown_instructions[i.inst] = 1;
                 }
                 if (warnings)
-                    writeln("warning: unknown instruction ",i.inst);
+                    warn("warning: unknown instruction ",i.inst);
             }
             foreach (o; i.operands) {
                 if (is_register(o.raw, o.rc)) {
@@ -253,7 +253,7 @@ class InstructionData {
                 } else {
                     o.type = OperandType.Unknown;
                     if (warnings)
-						writeln("unknown: ",i.raw);
+						warn("warning: unknown operand ",i.raw);
                 }
                 //writeln(o);
             }
@@ -457,7 +457,7 @@ void run_backends(Backend[] backends, Instruction[] instructions, Section[] sect
 		try {
 			mixin(gen_run_backends());
 		} catch (BackendException e) {
-			writeln("Exception in backend ",to!string(b)," (",e.msg,")");
+			warn("Exception in backend ",to!string(b)," (",e.msg,")");
 		}
     }
 }
@@ -470,3 +470,4 @@ string gen_run_backends() {
     }
     return s ~ "default: throw new UnknownBackendException(\"error in run backends\",to!string(b));}";
 }
+

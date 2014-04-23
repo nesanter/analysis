@@ -1,3 +1,4 @@
+import std.stdio;
 import std.conv;
 
 enum Backend { stats, printer, calls, cyclo, none }
@@ -132,4 +133,8 @@ class BackendException : Exception {
 	this(string msg) {
 		super(msg);
 	}
+}
+
+void warn(S...)(S args) {
+    stderr.writeln(args);
 }
