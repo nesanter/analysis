@@ -10,6 +10,7 @@ import defs;
 
 
 void run(Instruction[] instructions, Section[] sections, bool[string] modes) {
+	
 	Function[Section] fns;
 	
     foreach (sec; sections) {
@@ -35,8 +36,18 @@ void run(Instruction[] instructions, Section[] sections, bool[string] modes) {
 		}
 	}
 	
-	foreach (sec; fns.byKey) {
-		writeln(sec," -> ",fns[sec].edges," + ",fns[sec].unknown_edges);
+	if ("dot" in modes && modes["dot"]) {
+		writeln("digraph {");
+		foreach (sec; fns.byKey) {
+			foreach (edge; fns[sec].edges.byKey) {
+				writeln("\ts",sec.address," -> ",edge.address);
+			}
+		}
+		writeln("}");
+	} else {
+		foreach (sec; fns.byKey) {
+			writeln(sec," -> ",fns[sec].edges," + ",fns[sec].unknown_edges);
+		}
 	}
 }
 

@@ -128,3 +128,8 @@ class UnknownBackendException : Exception {
         super(msg);
     }
 }
+class BackendException : Exception {
+	this(string msg) {
+		super(msg);
+	}
+}

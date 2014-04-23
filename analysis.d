@@ -13,12 +13,12 @@ static import backend.printer;
 static import backend.calls;
 
 Backend[] analysis_types;
+bool[string] modes;
 bool warnings = false;
 
 void main(string[] args) {
     
     bool help, print_unknown;
-    bool[string] modes;
     string iset_name = "iset.txt";
     
     try {
@@ -30,7 +30,7 @@ void main(string[] args) {
                 "iset", &iset_name,
                 "warn", &warnings,
                 "unk", &print_unknown,
-                "mode|m", &modes
+                "mode|m", &set_mode
             );
         } catch (UnknownBackendException be) {
             writeln("failed to parse commandline (unknown backend ",be.bad_backend,")");
@@ -40,6 +40,8 @@ void main(string[] args) {
         writeln("failed to parse commandline");
         return;
     }
+    
+    writeln(modes);
     
     if (args.length == 1 || help) {
         display_help();
@@ -74,7 +76,7 @@ void main(string[] args) {
     try {
          id = new InstructionData(infile,opload);
     } catch (Exception e) {
-        writeln("Unexpected error: ",e.msg);
+        writeln("Unexpected internal error: ",e.msg);
     }
     
     infile.close();
@@ -91,8 +93,11 @@ void main(string[] args) {
             writeln("unknown instruction ",inst," (count: ",id.unknown_instructions[inst],")");
         }
     }
-
-    run_backends(analysis_types, id.instructions, id.sections, modes);
+	try {
+		run_backends(analysis_types, id.instructions, id.sections, modes);
+	} catch (Exception e) {
+		writeln("Unexpected internal error: ",e.msg);
+	}
 }
 
 void set_type(string opt, string val) {
@@ -103,6 +108,18 @@ void set_type(string opt, string val) {
         }
     }
     throw new UnknownBackendException("Error: unknown backend", val);
+}
+
+void set_mode(string opt, string val) {
+	if (val.length > 1) {
+		if (val[0] == '-') {
+			modes[val[1..$]] = false;
+		} else if (val[0] == '+') {
+			modes[val[1..$]] = true;
+		} else {
+			modes[val] = true;
+		}
+	}
 }
 
 void display_help() {
@@ -437,7 +454,11 @@ ulong ch_to_dec(char ch) {
 
 void run_backends(Backend[] backends, Instruction[] instructions, Section[] sections, bool[string] modes) {
     foreach (b; backends) {
-        mixin(gen_run_backends());
+		try {
+			mixin(gen_run_backends());
+		} catch (BackendException e) {
+			writeln("Exception in backend ",to!string(b)," (",e.msg,")");
+		}
     }
 }
 
