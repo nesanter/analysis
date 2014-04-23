@@ -9,7 +9,7 @@ import defs;
  */
 
 
-void run(Instruction[] instructions, Section[] sections) {
+void run(Instruction[] instructions, Section[] sections, bool[string] modes) {
 	Function[Section] fns;
 	
     foreach (sec; sections) {

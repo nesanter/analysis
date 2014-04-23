@@ -3,7 +3,7 @@ import std.stdio;
 
 import defs;
 
-void run(Instruction[] instructions, Section[] sections) {
+void run(Instruction[] instructions, Section[] sections, bool[string] modes) {
     writeln("[begin instruction summary]");
     foreach (i,inst; instructions)
         writeln(i,"\t",inst);

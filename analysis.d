@@ -18,6 +18,7 @@ bool warnings = false;
 void main(string[] args) {
     
     bool help, print_unknown;
+    bool[string] modes;
     string iset_name = "iset.txt";
     
     try {
@@ -28,7 +29,8 @@ void main(string[] args) {
                 "type|t", &set_type,
                 "iset", &iset_name,
                 "warn", &warnings,
-                "unk", &print_unknown
+                "unk", &print_unknown,
+                "mode|m", &modes
             );
         } catch (UnknownBackendException be) {
             writeln("failed to parse commandline (unknown backend ",be.bad_backend,")");
@@ -90,7 +92,7 @@ void main(string[] args) {
         }
     }
 
-    run_backends(analysis_types, id.instructions, id.sections);
+    run_backends(analysis_types, id.instructions, id.sections, modes);
 }
 
 void set_type(string opt, string val) {
@@ -433,7 +435,7 @@ ulong ch_to_dec(char ch) {
     throw new ParseException("Expected hex character, got "~[ch]);
 }
 
-void run_backends(Backend[] backends, Instruction[] instructions, Section[] sections) {
+void run_backends(Backend[] backends, Instruction[] instructions, Section[] sections, bool[string] modes) {
     foreach (b; backends) {
         mixin(gen_run_backends());
     }
@@ -443,7 +445,7 @@ string gen_run_backends() {
     string s = "switch (b) {";
     foreach (b; EnumMembers!Backend) {
         if (b != Backend.none)
-            s ~= "case Backend."~to!string(b)~": backend."~to!string(b)~".run(instructions,sections); break;";
+            s ~= "case Backend."~to!string(b)~": backend."~to!string(b)~".run(instructions,sections,modes); break;";
     }
     return s ~ "default: throw new UnknownBackendException(\"error in run backends\",to!string(b));}";
 }
