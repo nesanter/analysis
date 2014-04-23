@@ -1,6 +1,6 @@
 import std.conv;
 
-enum Backend { stats, printer, calls, none }
+enum Backend { stats, printer, calls, cyclo, none }
 
 enum RegClass {
     none,
