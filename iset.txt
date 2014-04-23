@@ -19,9 +19,9 @@
 ;8086/8088 instructions
 ; (besides protected mode only)
 aaa data +a -a
-aad warn +a -a
-aam warn +a -a
-aas warn +a -a
+aad data +a -a
+aam data +a -a
+aas data +a -a
 adc data
 add data
 and data
@@ -35,8 +35,8 @@ cmp control
 cmpsb control mem +di -di -si
 cmpsw control mem +di -di -si
 cwd data +a -a
-daa warn +a -a
-das warn +a -a
+daa data +a -a
+das data +a -a
 dec data
 div data +a +d -a
 esc warn
