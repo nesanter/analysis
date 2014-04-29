@@ -165,21 +165,28 @@ class InstructionData {
             ulong mode = 0;
             foreach (ch; line[2..$]) {
                 i.raw ~= ch;
+                //writeln(ch," - ",mode);
                 final switch (mode) {
                     case 0:
-                        if (ch == ':') {
+                        if (ch != ' ') {
                             mode = 1;
+                            goto case 1;
+                        }
+                    break;
+                    case 1:
+                        if (ch == ':') {
+                            mode = 2;
                         } else {
                             i.address = (i.address << 4) + ch_to_hex(ch);
                         }
                     break;
-                    case 1:
+                    case 2:
                         if (ch != ' ' && ch != '\t') {
-                            mode = 2;
-                            goto case 2;
+                            mode = 3;
+                            goto case 3;
                         }
                     break;
-                    case 2:
+                    case 3:
                         if (ch == ' ') {
                             if (i.inst in opcld.opcodes) {
                                 if (opcld.opcodes[i.inst].flag_prefix) {
@@ -192,22 +199,22 @@ class InstructionData {
                                     }
                                     i.inst = "";
                                 } else {
-                                    mode = 3;
+                                    mode = 4;
                                 }
                             } else {
-                                mode = 3;
+                                mode = 4;
                             }
                         } else {
                             i.inst ~= ch;
                         }
                     break;
-                    case 3:
+                    case 4:
                         if (ch != ' ') {
-                            mode = 4;
-                            goto case 4;
+                            mode = 5;
+                            goto case 5;
                         }
                     break;
-                    case 4:
+                    case 5:
                         if (i.operands.length == 0)
                             i.operands ~= new Operand;
                         if (ch == ',') {
@@ -454,11 +461,11 @@ ulong ch_to_dec(char ch) {
 
 void run_backends(Backend[] backends, Instruction[] instructions, Section[] sections, bool[string] modes) {
     foreach (b; backends) {
-		try {
-			mixin(gen_run_backends());
-		} catch (BackendException e) {
-			warn("Exception in backend ",to!string(b)," (",e.msg,")");
-		}
+        try {
+            mixin(gen_run_backends());
+        } catch (BackendException e) {
+            warn("Exception in backend ",to!string(b)," (",e.msg,")");
+        }
     }
 }
 
